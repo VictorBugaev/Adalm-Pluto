@@ -10,8 +10,7 @@ sdr = adi.Pluto("ip:192.168.2.1")
 
 # Configure properties
 sdr.rx_lo = 2437000000
-sdr.sample_rate = 30720000
-N=250
+N=70
 # Collect data
 for r in range(30):
     rx = sdr.rx()
@@ -29,14 +28,12 @@ for r in range(30):
     plt.plot(rx.real)
     plt.plot(rx.imag)
     '''
-    
     x = rx.real
     X = fft(x,N)/N # вычисление ДПФ и нормирование на N
-    X = ifft(X*N)
     plt.figure(2)
     k = np.arange(0, N)
     plt.stem(k,abs(X)) # выводим модуль ДПФ в точках ДПФ
-    plt.xlabel('')
+    plt.xlabel('Гц')
     plt.ylabel('$x[k]$') 
     
     plt.draw()
