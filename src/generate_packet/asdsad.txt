@@ -1,0 +1,81 @@
+int main(int argc, char *argv[]){
+
+    // char p[4] = {1, 1, 1, 1};
+    // int *r = (int*)(p);
+    // *r = 0xaabbccdd;
+    // printf("%x %x %x %x\n", (unsigned char)p[0], 
+    // (unsigned char)p[1], (unsigned char)p[2], (unsigned char)p[3]);//dd cc bb aa
+    // return 0;
+    u_char data[SIZE_BUFFER];
+    u_char polinom_crc[SIZE_CRC];
+    u_char crc[SIZE_CRC];
+    u_char gold_first[SIZE_SEQ_GOLD];
+    u_char *data = data + SIZE_SEQ_GOLD;
+    int size;
+
+    if(argc < COUNT_ARGV){
+        printf("Not enough arguments\n");
+        return 0;
+    }
+    memset(data, 0, sizeof(data));
+    memset((void*) gold_first, 0, SIZE_SEQ_GOLD);
+    size = read_data_from_file(data, argv[DATA]);
+#ifdef DEBUG
+    printf("File: %s\n", argv[DATA]);
+    printf("read data: %d\n", size);
+#endif
+    if(size == -1){
+        return -1;
+    }
+    if(!size){
+        printf("file '%s' empty\n", argv[DATA]);
+        return 0;
+    }
+    read_polinom(polinom_crc, NULL);
+    if(read_sequence_gold(gold_first, argv[SEQUENCE_GOLD]) == -1){
+        return -1;
+    }
+#ifdef DEBUG
+    printf("Data:\n");
+    print_data(data, size);
+    print_bit(data, size);
+    printf("Data + 0(%d):\n", SIZE_CRC-1);
+    print_bit(data, size + SIZE_CRC);
+    print_polinom_crc(polinom_crc);
+    print_bit(polinom_crc, SIZE_CRC);
+    printf("\n\n");
+#endif
+#if 0
+    shift_bit(polinom_crc, SIZE_CRC);
+    print_bit(polinom_crc, SIZE_CRC);
+    return 0;
+#endif
+#if 0
+    xor_bytes(data, polinom_crc, SIZE_CRC);
+    print_bit(data, SIZE_CRC);
+    return 0;
+#endif
+    calc_crc(data, polinom_crc, crc, size + SIZE_CRC);
+    memcpy( (void*)(data + size), (void*)crc, SIZE_CRC);
+#ifdef DEBUG_CALC_CRC
+    printf("CRC:\n");
+    print_bit(crc, SIZE_CRC);
+    printf("Data + CRC:\n");
+    print_bit(data, size + SIZE_CRC);
+    // data[1] |= 64;
+    // printf("Data + CRC (trash):\n");
+    // print_bit(data, size + SIZE_CRC);
+    calc_crc(data, polinom_crc, crc, size + SIZE_CRC);
+    printf("CRC:\n");
+    print_bit(crc, SIZE_CRC);
+    printf("End\n");
+    return 0
+#endif //DEBUG_CALC_CRC
+    
+    FILE *file = fopen(argv[RESULT], "w");
+    print_bit_to_stream(data, size + SIZE_CRC, file);
+    fclose(file);
+    
+    // write_data_to_file(data, size + SIZE_CRC);
+    return 0;
+}
